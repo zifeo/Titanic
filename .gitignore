@@ -33,4 +33,6 @@ env.bak/
 venv.bak/
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
-
+data
+runs
+u
