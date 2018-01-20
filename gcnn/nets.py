@@ -3,13 +3,16 @@ import torch.nn as nn
 from torch.autograd import Variable
 import numpy as np
 
+from skorch import NeuralNet
+from skorch.utils import to_numpy
+from sklearn.metrics import log_loss
+
 from gcnn.layers import GraphChebyConv
 
 conv1_dim = 32
 conv2_dim = 64
 
 class Net1(nn.Module):
-
     def __init__(self):
         super().__init__()
 
@@ -31,7 +34,6 @@ class Net1(nn.Module):
         return out
 
 class Net2(nn.Module):
-
     def __init__(self):
         super().__init__()
 
@@ -63,3 +65,17 @@ class Net2(nn.Module):
         out = self.gc2(out)
         out = self.fc(out.view(out.size(0), -1))
         return out
+    
+class NNplusplus(NeuralNet):
+    '''
+    inherit NeuralNet class from skorch
+    '''
+    def score(self,X,target):
+        '''
+        redefine scoring method to be the same as the one of kaggle (log_loss)
+        '''
+        y_preds = []
+        for yp in self.forward_iter(X, training=False):
+            y_preds.append(to_numpy(yp.sigmoid()))   
+        y_preds = np.concatenate(y_preds, 0)
+        return log_loss(target,y_preds)
