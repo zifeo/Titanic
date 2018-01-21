@@ -14,13 +14,14 @@ class BaselineCNN(nn.Module):
     def __init__(self, conv1_dim=16, conv2_dim=32):
         super().__init__()
 
-        self.layer1 = nn.Sequential(
+        # groups 2 performe two parallel pairs of convolution
+        self.c1 = nn.Sequential(
             nn.Conv2d(2, conv1_dim, kernel_size=7, stride=1, padding=2, groups=2),
             #nn.BatchNorm2d(outsize1),
             nn.ReLU(),
             nn.MaxPool2d(4)
         )
-        self.layer2 = nn.Sequential(
+        self.c2 = nn.Sequential(
             nn.Conv2d(conv1_dim, conv2_dim, kernel_size=5, stride=1, padding=2),
             #nn.BatchNorm2d(outsize2),
             nn.ReLU(),
@@ -29,17 +30,18 @@ class BaselineCNN(nn.Module):
         
 
         self.fc = nn.Sequential(
-            nn.Linear(conv2_dim * 9 * 9, 1024),
+            nn.Linear(conv2_dim * 9 * 9 + 1, 1024),
             nn.ReLU(),
             nn.Linear(1024, 512),
             nn.ReLU(),
             nn.Linear(512, 1),
         )
 
-    def forward(self, x):
-        out = self.layer1(x)
-        out = self.layer2(out)
+    def forward(self, x, x2):
+        out = self.c1(x)
+        out = self.c2(out)
         out = out.view(out.size(0), -1)
+        out = torch.cat([out, x2], 1)
         out = self.fc(out)
         return out
 
@@ -66,7 +68,8 @@ class PaperSimpleGC(nn.Module):
 
     def forward(self, x):
         out = self.gc1(x)
-        out = self.fc(out.view(out.size(0), -1))
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
         return out
 
     
@@ -104,7 +107,8 @@ class PaperGCFC(nn.Module):
     def forward(self, x):
         out = self.gc1(x)
         out = self.gc2(out)
-        out = self.fc(out.view(out.size(0), -1))
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
         return out
     
     
