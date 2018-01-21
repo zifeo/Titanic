@@ -1,5 +1,5 @@
 from sklearn.cluster import SpectralClustering
-from coarse_utils import *
+from gcnn.coarsening.coarse_utils import *
 
 def coarsen_amg(A, levels, self_connections=False):
     """
