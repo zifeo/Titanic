@@ -35,6 +35,10 @@ def graph_sparsify(M, epsilon, maxiter=10):
     ----------
     See :cite:`spielman2011graph`, :cite:`rudelson1999random` and :cite:`rudelson2007sampling`.
     for more informations
+    
+    Code adapted from the PyGSP library.
+    Source: http://pygsp.readthedocs.io/en/stable/_modules/pygsp/reduction.html#graph_sparsify
+    License: BSD
 
     """
     # Test the input parameters
@@ -129,6 +133,10 @@ def resistance_distance(G):
     References
     ----------
     :cite:`klein1993resistance`
+    
+    Code adapted from the PyGSP library.
+    Source: http://pygsp.readthedocs.io/en/stable/_modules/pygsp/utils.html#resistance_distance
+    License: BSD
     """
 
     if sparse.issparse(G):
@@ -150,6 +158,36 @@ def resistance_distance(G):
     return rd
 
 def kron_reduction(G, ind):
+    r"""Compute the Kron reduction.
+
+    This function perform the Kron reduction of the weight matrix in the
+    graph *G*, with boundary nodes labeled by *ind*. This function will
+    create a new graph with a weight matrix Wnew that contain only boundary
+    nodes and is computed as the Schur complement of the original matrix
+    with respect to the selected indices.
+
+    Parameters
+    ----------
+    G : Graph or sparse matrix
+        Graph structure or weight matrix
+    ind : list
+        indices of the nodes to keep
+
+    Returns
+    -------
+    Gnew : Graph or sparse matrix
+        New graph structure or weight matrix
+
+
+    References
+    ----------
+    See :cite:`dorfler2013kron`
+    
+    Code adapted from the PyGSP library.
+    Source: http://pygsp.readthedocs.io/en/stable/_modules/pygsp/reduction.html#kron_reduction
+    License: BSD
+
+    """
     if isinstance(G, graphs.Graph):
         L = G.L
     else:
@@ -200,6 +238,64 @@ def kron_reduction(G, ind):
     return Gnew
 
 def graph_multiresolution(G, levels=3, sparsify=True, reg_eps=0.005, sparsify_eps = None):
+    r"""Compute a pyramid of graphs (by Kron reduction).
+
+    'graph_multiresolution(G,levels)' computes a multiresolution of
+    graph by repeatedly downsampling and performing graph reduction. The
+    default downsampling method is the largest eigenvector method based on
+    the polarity of the components of the eigenvector associated with the
+    largest graph Laplacian eigenvalue. The default graph reduction method
+    is Kron reduction followed by a graph sparsification step.
+    *param* is a structure of optional parameters.
+
+    Parameters
+    ----------
+    G : adjacency matrix
+        The graph to reduce.
+    levels : int
+        Number of level of decomposition
+    lambd : float
+        Stability parameter. It adds self loop to the graph to give the
+        algorithm some stability (default = 0.025). [UNUSED?!]
+    sparsify : bool
+        To perform a spectral sparsification step immediately after
+        the graph reduction (default is True).
+    sparsify_eps : float
+        Parameter epsilon used in the spectral sparsification
+        (default is min(10/sqrt(G.N),.3)).
+    downsampling_method: string
+        The graph downsampling method (default is 'largest_eigenvector').
+    reduction_method : string
+        The graph reduction method (default is 'kron')
+    compute_full_eigen : bool
+        To also compute the graph Laplacian eigenvalues and eigenvectors
+        for every graph in the multiresolution sequence (default is False).
+    reg_eps : float
+        The regularized graph Laplacian is :math:`\bar{L}=L+\epsilon I`.
+        A smaller epsilon may lead to better regularization, but will also
+        require a higher order Chebyshev approximation. (default is 0.005)
+
+    Returns
+    -------
+    Gs : list
+        A list of graph layers.
+
+    Examples
+    --------
+    >>> from pygsp import reduction
+    >>> levels = 5
+    >>> G = graphs.Sensor(N=512)
+    >>> G.compute_fourier_basis()
+    >>> Gs = reduction.graph_multiresolution(G, levels, sparsify=False)
+    >>> for idx in range(levels):
+    ...     Gs[idx].plotting['plot_name'] = 'Reduction level: {}'.format(idx)
+    ...     Gs[idx].plot()
+    
+    Code adapted from the PyGSP library.
+    Source: http://pygsp.readthedocs.io/en/stable/_modules/pygsp/reduction.html#graph_multiresolution
+    License: BSD
+
+    """
     G = graphs.Graph(G)
     G.set_coordinates()
     
