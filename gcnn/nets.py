@@ -3,13 +3,54 @@ import torch.nn as nn
 from torch.autograd import Variable
 import numpy as np
 
+from skorch import NeuralNet
+from skorch.utils import to_numpy
+from sklearn.metrics import log_loss
+
 from gcnn.layers import GraphChebyConv
 
-conv1_dim = 32
-conv2_dim = 64
 
-class Net1(nn.Module):
+class BaselineCNN(nn.Module):
+    def __init__(self, conv1_dim=16, conv2_dim=32):
+        super().__init__()
 
+        # groups 2 performe two parallel pairs of convolution
+        self.c1 = nn.Sequential(
+            nn.Conv2d(2, conv1_dim, kernel_size=7, stride=1, padding=2, groups=2),
+            #nn.BatchNorm2d(outsize1),
+            nn.ReLU(),
+            nn.MaxPool2d(4)
+        )
+        self.c2 = nn.Sequential(
+            nn.Conv2d(conv1_dim, conv2_dim, kernel_size=5, stride=1, padding=2),
+            #nn.BatchNorm2d(outsize2),
+            nn.ReLU(),
+            nn.MaxPool2d(2)
+        )
+        
+
+        self.fc = nn.Sequential(
+            nn.Linear(conv2_dim * 9 * 9 + 1, 1024),
+            nn.ReLU(),
+            nn.Linear(1024, 512),
+            nn.ReLU(),
+            nn.Linear(512, 1),
+        )
+
+    def forward(self, x, x2):
+        out = self.c1(x)
+        out = self.c2(out)
+        out = out.view(out.size(0), -1)
+        out = torch.cat([out, x2], 1)
+        out = self.fc(out)
+        return out
+
+    
+class PaperSimpleGC(nn.Module):
+    """
+    GC10
+    """
+    
     def __init__(self):
         super().__init__()
 
@@ -27,12 +68,17 @@ class Net1(nn.Module):
 
     def forward(self, x):
         out = self.gc1(x)
-        out = self.fc(out.view(out.size(0), -1))
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
         return out
 
-class Net2(nn.Module):
-
-    def __init__(self):
+    
+class PaperGCFC(nn.Module):
+    """
+    GC32-P4-GC64-P4-FC512
+    """
+    
+    def __init__(self, conv1_dim=32, conv2_dim=64):
         super().__init__()
 
         self.gc1 = nn.Sequential(
@@ -61,5 +107,8 @@ class Net2(nn.Module):
     def forward(self, x):
         out = self.gc1(x)
         out = self.gc2(out)
-        out = self.fc(out.view(out.size(0), -1))
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
         return out
+    
+    
