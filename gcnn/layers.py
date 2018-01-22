@@ -72,7 +72,7 @@ class GraphChebyConv(nn.Module):
         assert laplacian.size(1) == self.n
 
         lmax = torch.symeig(laplacian)[0].max()
-        assert 0 < lmax <= 2
+        assert 0 < lmax <= 2.0001, 'lmax='.format(lmax)
         self.l = Variable(2 / lmax * laplacian - torch.eye(self.n).cuda(), requires_grad=False) # n x n
 
         self.weight = nn.Parameter(torch.Tensor(self.in_channels * self.k, self.out_channels)) # (in * k) x out

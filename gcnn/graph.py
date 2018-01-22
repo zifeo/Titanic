@@ -14,7 +14,7 @@ def grid_coordinates(n: int):
 
 def knn(z, k: int = 4, metric: str = 'euclidean'):
     """
-    K-NN adjacency matrix from list of features. Might return more than k neighbors in case of distance equality.
+    K-NN graph from list of features. Might return more than k neighbors in case of distance equality.
     """
     dists = sp.spatial.distance.pdist(z, metric)
     dists = sp.spatial.distance.squareform(dists)
@@ -24,47 +24,53 @@ def knn(z, k: int = 4, metric: str = 'euclidean'):
     weights[mask & mask.T] = 0
     
     assert np.all(weights == weights.T)
-    return weights
+    return nx.from_numpy_array(weights > 0)
 
 
-def kwraps(n: int, k: int = 1):
+def knn3d(z, k: int = 4, metric: str = 'euclidean', d: int = 2):
     """
-    Adjacency matrix from a wrapped grid (border touch other borders) within k elements. Not optimized.
+    K-NN hraph from list of features. Might return more than k neighbors in case of distance equality.
+    """
+    levels = [np.c_[z, np.ones_like(z) * d] for d in range(d)]
+    return knn(np.concatenate(levels), k=k, metric=metric)
+
+
+def kwraps(n: int, kd: int = 1):
+    """
+    Graph from a wrapped grid (border touch other borders) within kd elements. Not optimized.
     """
     
-    adj = np.zeros([n ** 2, n ** 2])
+    g = nx.empty_graph()
 
     def add_edge(x1, y1, x2, y2, v=1):
-        i = np.ravel_multi_index((x1, y1), (n, n))
-        j = np.ravel_multi_index((x2, y2), (n, n))   
-        adj[i, j] = v
+        g.add_edge((x1, y1), (x2, y2))   
 
     for x in range(n):
         for y in range(n):
-            for dx in range(-k, k + 1):
-                for dy in range(-k, k + 1):
+            for dx in range(-kd, kd + 1):
+                for dy in range(-kd, kd + 1):
                     if dx != 0 or dy != 0:
                         add_edge(x, y, (x + dx) % n, (y + dy) % n)  
     
-    return adj
+    return g
 
 
-def kwraps3d(n: int, k: int = 1, d: int = 2):
+def kwraps3d(n: int, kd: int = 1, d: int = 2):
     """
-    NetworkX graph from a wrapped 3d grid (border touch other borders) within k elements. Not optimized.
+    Graph from a wrapped 3d grid (border touch other borders) within kd elements. Not optimized.
     """
     
     g = nx.empty_graph()
 
     def add_edge(x1, y1, z1, x2, y2, z2, v=1):
-        g.add_edge((x1, y1, z1), (x2, y2, z2))   
-
+        g.add_edge((z1, x1, y1), (z2, x2, y2))   
+        
     for x in range(n):
         for y in range(n):
             for z in range(d):
-                for dx in range(-k, k + 1):
-                    for dy in range(-k, k + 1):
-                        for dz in range(-k, k + 1):
+                for dx in range(-kd, kd + 1):
+                    for dy in range(-kd, kd + 1):
+                        for dz in range(-kd, kd + 1):
                             if dx != 0 or dy != 0 or dz != 0:
                                 add_edge(x, y, z, (x + dx) % n, (y + dy) % n, (z + dz) % d)  
     
