@@ -77,14 +77,17 @@ def kwraps3d(n: int, kd: int = 1, d: int = 2):
     return g
 
 
-def remove_random_edge(graph, size):
+def remove_random_edges(graph, size):
     """
     Remove some edges from graph.
     """
     edges = list(graph.edges)
+    
     for edge in np.random.choice(range(len(edges)), size=size, replace=False):
         edge = edges[edge]
         graph.remove_edge(edge[0], edge[1])
+    
+    return graph
 
 
 def fourier(laplacian):
