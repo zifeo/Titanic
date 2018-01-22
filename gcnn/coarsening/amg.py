@@ -1,7 +1,7 @@
 from sklearn.cluster import SpectralClustering
 from gcnn.coarsening.coarse_utils import *
 
-def coarsen_amg(A, levels, self_connections=False):
+def coarsen(A, levels, self_connections=False):
     """
     Coarsen a graph, represented by its adjacency matrix A, at multiple
     levels.
