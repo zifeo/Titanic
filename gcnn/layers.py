@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 import numpy as np
 
+
 class GraphFourierConv(nn.Module):
     def __init__(self, fourier_basis, in_channels, out_channels, bias=True):
         super().__init__()
