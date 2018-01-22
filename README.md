@@ -1,10 +1,13 @@
 # Titanic
 
-Work in progress, more to come soon.
+Building on the top of recent advances in the field of signal processing on graphs (Schuman et al., 2013) and deep learning on irregular domains (Bronstein et al., 2017), we investigate the performance of standard machine learning methods and the relevance of graph based convolutional neural networks to perform binary classification in this specific case (layered data). The new method provide a convenient way of getting rotational invariance over the data (Defferrard et al., 2017) and set up a flexible framework for structured pooling.
+
+See the [project report](./project.ipynb) (notebook).
 
 ## Getting started
 
 ```shell
+7z e data.7z 
 pip3 install -r requirements.txt
 jupyter notebook
 # or

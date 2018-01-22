@@ -6,8 +6,9 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.autograd import Variable
 from timeit import default_timer as timer
-import numpy as np
-
+import numpy as np 
+from skorch.utils import to_numpy
+from sklearn.metrics import log_loss
 
 def score_classification(truth, predicted):
     """
